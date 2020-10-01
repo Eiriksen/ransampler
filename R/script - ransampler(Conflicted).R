@@ -11,8 +11,8 @@
 #' @param priBy If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")
 #' @param useDuplis If all individuals that are selected within each combination may be be used, or just one of them.
 #' @export
-ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F,identifier=""){
-  message("Starting random sampling ...")
+ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F){
+  message("Starting random sampling...")
   dataframe$ID_num       <- 1:nrow(dataframe)
 
   # just adding columns that will be in the resulting dataframe, to keep them equal
@@ -93,7 +93,7 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
           found=T
           count_notFound=count_notFound+1
 
-          table_foundIndividuals %<>% add_row(ID_type = glue("Type {identifier}-{row}"))
+          table_foundIndividuals %<>% add_row(ID_type = glue("Type {row}"))
           next()
           }
 
@@ -147,7 +147,7 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
          # store this individual and move on to the next:
          found=T
          individual$level = count_level
-         individual$ID_type = glue("Type {identifier}-{row}")
+         individual$ID_type = glue("Type {row}")
          dataframe = dataframe %>% filter(ID_num != individual$ID_num)
          table_foundIndividuals = rbind(table_foundIndividuals, individual)
 
