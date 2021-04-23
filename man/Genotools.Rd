@@ -4,6 +4,3 @@
 \name{Genotools}
 \alias{Genotools}
 \title{Ransampler - A tool for doing random (condition based, grouping and no-sharing) samples of a population}
-\description{
-Ransampler - A tool for doing random (condition based, grouping and no-sharing) samples of a population
-}

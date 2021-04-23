@@ -11,13 +11,22 @@
 #' @param priBy If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")
 #' @param useDuplis If all individuals that are selected within each combination may be be used, or just one of them.
 #' @export
-ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F,identifier=""){
-  message("Starting random sampling ...")
-  dataframe$ID_num       <- 1:nrow(dataframe)
+ransampler = function(dataframe,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F,identifier=""){
+  require(glue)
+  require(tidyverse)
+  require(magrittr)
 
-  # just adding columns that will be in the resulting dataframe, to keep them equal
-    dataframe$ID_type      <- NA
-  dataframe$level        <- NA
+
+  message("Starting random sampling ...")
+
+
+  dataframe$ID_num  <- 1:nrow(dataframe)
+  dataframe$ID_type <- ""
+  dataframe$level   <- NA
+  dataframe$layer   <- NA
+
+
+  # ofEach can both be a vector and a complete combination table
   if(is.vector(ofEach)){
     table_combinations  <- combinationTable(dataframe, ofEach)
   }
@@ -26,28 +35,40 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
   }
 
 
-  table_combinations %<>% combinations_getOptions(table_main=dataframe) %>%
-    arrange(by=options)
-
-  message(glue("Combinations with no options:{table_combinations %>% filter(options==0) %>% nrow()}"))
-  if(table_combinations %>% filter(options==0) %>% nrow() != 0) print(table_combinations %>% filter(options==0))
-   table_combinations %<>%  select(-c(options))
+  # if exceptionsa are used:
+  if (!missing(except)){
+    for (exception in except){
+      table_combinations <- table_combinations %>% anti_join(listSelect(df=table_combinations,l=exception,eq=T),by=ofEach)
+    }
+  }
 
 
   if(missing(priBy)){
-    dataframe$pri = 1
-    priBy="pri"
+    dataframe$internalPri = 1
+    priBy="internalPri"
   }
 
+
+
+  # This part is entirely dioagnostic, just shows the used
+  # - combinations table and the available options for each combination
+  table_combinations %<>%
+    combinations_getOptions(table_main=dataframe) %>%
+    arrange(by=options)
+  message(glue("Combinations with no options:{table_combinations %>% filter(options==0) %>% nrow()}"))
+  message("Combinations table:")
+  print(table_combinations %>% tbl_df(),n=100)
+  table_combinations %<>%  select(-c(options))
+
+
+  # This is the table that will be returned
   table_foundIndividuals <- dataframe[0,]
-  pri_max                <- dataframe[[priBy]] %>% max(na.rm=T)
+  pri_max <- dataframe[[priBy]] %>% max(na.rm=T)
 
-  count_notFound = 0
-  count_internalConflicts=0
-  count_externalConflicts=0
-  notFoundList="Not found:"
-
-
+  count_notFound <- 0
+  count_internalConflicts <- 0
+  count_externalConflicts <- 0
+  notFoundList <- "Not found:"
 
 
   ## build the found indiv table layerswise. Find first one individual of each combinatoin,
@@ -66,7 +87,8 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
       {
         table_thisCombinationsIndiv_narrow = table_thisCombinationsIndiv
 
-        # Narrowing: (If this is on round #1, and usediplus is F, and layers are not exhausted, take only individuals with the same values as the first one chosen for this combination
+        # Narrowing: (If this is on round #1, and usediplus is F, and layers are not exhausted,
+        # - take only individuals with the same values as the first one chosen for this combination
         if (count_layer != 1 & useDuplis == F & count_level != count_layer){
           previous_individual = table_foundIndividuals %>% listSelect(combination) %>% filter(level==count_level-1)
 
@@ -84,7 +106,7 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
         }
 
         # Prioritizing
-        table_thisCombinationsIndiv_narrow = table_thisCombinationsIndiv_narrow %>% filter(pri == pri_cur)
+        table_thisCombinationsIndiv_narrow = table_thisCombinationsIndiv_narrow %>% filter(!!rlang::sym(priBy) == pri_cur)
         if (nrow(table_thisCombinationsIndiv_narrow) == 0)
         {
 
@@ -93,7 +115,9 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
           found=T
           count_notFound=count_notFound+1
 
-          table_foundIndividuals %<>% add_row(ID_type = glue("Type {identifier}-{row}"))
+          combination["ID_type"] = as.character(glue("Type {identifier}-{row}"))
+          combination["layer"] = count_layer
+          table_foundIndividuals %<>% bind_rows(combination)
           next()
           }
 
@@ -105,8 +129,6 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
          ranRow = round(runif(1,1,nrow(table_thisCombinationsIndiv_narrow)))
          individual      = table_thisCombinationsIndiv_narrow[ranRow,]
          table_thisCombinationsIndiv = table_thisCombinationsIndiv %>% filter(ID_num != individual$ID_num)
-
-
 
 
          #external conflicts
@@ -125,8 +147,6 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
          if (external_conflict){
          next()
          }
-
-
 
          #internal conflict
          internal_conflict=F
@@ -148,6 +168,7 @@ ransampler = function(dataframe, ofEach,nOfEach=1,noShareWithin=c(),priBy,useDup
          found=T
          individual$level = count_level
          individual$ID_type = glue("Type {identifier}-{row}")
+         individual$layer = count_layer
          dataframe = dataframe %>% filter(ID_num != individual$ID_num)
          table_foundIndividuals = rbind(table_foundIndividuals, individual)
 
@@ -191,6 +212,7 @@ combinations_getOptions = function(table_combinations, table_main){
     thisCombination = x %>% as.list()
     thisIndividuals = table_main %>% listSelect(thisCombination)
     result          = thisIndividuals %>% nrow()
+    result
   })
   table_combinations$options = options
   table_combinations
