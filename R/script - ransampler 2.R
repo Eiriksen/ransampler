@@ -11,7 +11,7 @@
 #' @param priBy If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")
 #' @param useDuplis If all individuals that are selected within each combination may be be used, or just one of them.
 #' @export
-ransampler2 = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F,identifier=""){
+ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useDuplis=F,identifier="",returnCombTable=F){
   require(glue)
   require(tidyverse)
   require(magrittr)
@@ -46,12 +46,17 @@ ransampler2 = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,use
     priBy="internalPri"
   }
 
-  print(
+  if (returnCombTable==T){
+    return(table_combinations %>%
+    combinations_getOptions(table_main=table) %>%
+    #arrange(n_options) %>%
+    tbl_df())
+  }
+  else print(
     table_combinations %>%
     combinations_getOptions(table_main=table) %>%
     #arrange(n_options) %>%
-    tbl_df(),
-    n=100
+    tbl_df()
   )
 
   # Variables setup ----------------------------------------
@@ -133,6 +138,7 @@ ransampler2 = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,use
 
 
          external_conflict <- F
+         internal_conflict <- F
          # go through each noshare combination
          for (noShareCombination in noShareWithin)
          {
@@ -142,11 +148,11 @@ ransampler2 = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,use
             table_conflictIndividuals_ext <- table_selected %>% listFilter(cur_noShareParameters) %>% filter(!ID_num %in% table_notThese$ID_num)
             table_conflictIndividuals_int <- table_selected %>% listFilter(cur_noShareParameters) %>% listFilter(curCombination)
 
-            if (nrow(table_conflictIndividuals) !=0)
+            if (nrow(table_conflictIndividuals_int) !=0)
             {
               internal_conflict <- T
             }
-            if (nrow(table_conflictIndividuals) !=0)
+            if (nrow(table_conflictIndividuals_ext) !=0)
             {
               external_conflict <- T
             }
