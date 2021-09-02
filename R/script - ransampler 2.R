@@ -22,6 +22,7 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
   #   A vector: Is translated to a combination table
   #   A data.frame: is assumed to be a combination table
   #   A list of data frames: Is merged into a single data.frame
+  #   Empty,
   if(is.vector(ofEach)){
     table_combinations  <- combinationTable(table, ofEach)
   }
@@ -50,14 +51,14 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
     return(table_combinations %>%
     combinations_getOptions(table_main=table) %>%
     #arrange(n_options) %>%
-    tbl_df())
+    as_tibble())
   }
   else print(
     table_combinations %>%
     combinations_getOptions(table_main=table) %>%
     #arrange(n_options) %>%
-    tbl_df()
-  )
+    as_tibble(),
+  n=500)
 
   # Variables setup ----------------------------------------
   table_main <- table
@@ -78,6 +79,7 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
       is_found             <- F
       count_level          <- 1
       count_pri            <- 1
+      ID_type_cur          <- as.character(glue("Type {identifier}-{row}"))
       curCombination       <- table_combinations[row,] %>% as.list() %>% remove_listItem("nOfThis")
       table_curCombination <- table_main %>% listFilter(curCombination)
 
@@ -103,7 +105,7 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
           if (count_pri == max(table_main[[priBy]],na.rm=T))
           {
             is_found <- T
-            curCombination["ID_type"] <-  as.character(glue("Type {identifier}-{row}"))
+            curCombination["ID_type"] <-  ID_type_cur
             curCombination["layer"]   <-  count_layer
             table_selected %<>% bind_rows(curCombination)
             next()
@@ -117,10 +119,19 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
         # At some point, this is not going to work and this step is skipped.
         if (useDuplis == F & count_layer != 1 & count_level != count_layer)
         {
-          previous_individual <- table_selected %>% listFilter(curCombination) %>% filter(level==count_level-1)
+
+          previous_individual <<- table_selected %>% filter(ID_type == ID_type_cur) %>% filter(level==count_level)
+
+          if (previous_individual %>% nrow() == 0)
+          {
+            count_level <- count_level+1
+            next()
+          }
+
           for (noShareCombination in noShareWithin)
           {
             parameters_prevIndiv <- previous_individual %>% select(noShareCombination)
+
             table_curCombination_narrow <- table_curCombination_narrow %>% listFilter(parameters_prevIndiv)
           }
           if (nrow(table_curCombination_narrow) == 0)
@@ -142,10 +153,13 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
          # go through each noshare combination
          for (noShareCombination in noShareWithin)
          {
+
             table_notThese <- table_selected %>% listFilter(curCombination)
 
             cur_noShareParameters <- curIndividual %>% select(unlist(noShareCombination)) %>% as.list()
-            table_conflictIndividuals_ext <- table_selected %>% listFilter(cur_noShareParameters) %>% filter(!ID_num %in% table_notThese$ID_num)
+
+             table_conflictIndividuals_ext <- table_selected %>% listFilter(cur_noShareParameters) %>% filter(!ID_num %in% table_notThese$ID_num)
+
             table_conflictIndividuals_int <- table_selected %>% listFilter(cur_noShareParameters) %>% listFilter(curCombination)
 
             if (nrow(table_conflictIndividuals_int) !=0)
@@ -171,7 +185,7 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
          # store this individual and move on to the next:
          is_found <- T
          curIndividual$level <- count_level
-         curIndividual$ID_type <- glue("Type {identifier}-{row}")
+         curIndividual$ID_type <- ID_type_cur
          curIndividual$layer <- count_layer
          table_main <- table_main %>% filter(ID_num != curIndividual$ID_num)
          table_selected <- bind_rows(table_selected, curIndividual)
@@ -182,17 +196,19 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
   return(table_selected)
 }
 
-
+#' @export
 combinationTable = function(dataframe, columns){
   dataframe %>% select(columns) %>% na.omit() %>% as.list() %>% do.call(crossing,.)
 }
 
 # SKIPS NA values
 listFilter = function(df,l,eq=T){
+
   for (s in 1:length(l))
   {
     col = names(l)[s]
     val = l[s]
+
 
     if (is.na(val))
     {
