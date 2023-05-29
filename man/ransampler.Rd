@@ -13,7 +13,9 @@ ransampler(
   priBy,
   useDuplis = F,
   identifier = "",
-  returnCombTable = F
+  returnCombTable = F,
+  runs = 1,
+  reshuffle_combinationTable = F
 )
 }
 \arguments{
@@ -32,5 +34,5 @@ ransampler(
 \description{
 Takes a dataframe of individuals (rows) with certain attributes (columns), and samples a given number of individuals from all possible combinations of a given set of paramters
 For example, can sample one individual of ech combination of sex and age
-Also allows for some control, like, "no individuals sharing the same tank and family"
+Also allows for some control, like, "no individuals sharing the same treatment and family"
 }

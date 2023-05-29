@@ -2,7 +2,7 @@
 #'
 #' Takes a dataframe of individuals (rows) with certain attributes (columns), and samples a given number of individuals from all possible combinations of a given set of paramters
 #' For example, can sample one individual of ech combination of sex and age
-#' Also allows for some control, like, "no individuals sharing the same tank and family"
+#' Also allows for some control, like, "no individuals sharing the same treatment and family"
 #'
 #' @param dataframe The dataframe to get the individuals from. Each row must be a single individual. Columns are attributes.
 #' @param ofEach The attributes we want to randomise over, as a vector of column names, e.g: ofEach=c("sex","age","tank")
@@ -154,7 +154,6 @@ ransampler = function(table,ofEach,except,nOfEach=1,noShareWithin=c(),priBy,useD
            ranRow <- round(runif(1,1,nrow(table_curCombination_narrow)))
            curIndividual <- table_curCombination_narrow[ranRow,]
            table_curCombination <- filter(table_curCombination, ID_num != curIndividual$ID_num)
-
 
 
            external_conflict <- F
