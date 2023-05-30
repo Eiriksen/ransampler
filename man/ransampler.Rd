@@ -6,33 +6,46 @@
 \usage{
 ransampler(
   table,
-  ofEach,
+  ofeach,
   except,
-  nOfEach = 1,
-  noShareWithin = c(),
-  priBy,
-  useDuplis = F,
+  n_of_each = 1,
+  no_share = c(),
+  pri_by,
+  use_dupli = F,
   identifier = "",
-  returnCombTable = F,
+  return_combtable = F,
   runs = 1,
-  reshuffle_combinationTable = F
+  reshuffle_combtable = F
 )
 }
 \arguments{
-\item{ofEach}{The attributes we want to randomise over, as a vector of column names, e.g: ofEach=c("sex","age","tank")}
+\item{ofeach}{The attributes we want to randomise over, as a vector of column names, e.g: ofeach=c("sex","age","tank"). Can also be a combination table (data frame).}
 
-\item{noShareWithin}{One or more sets of paremeters, where unique combinations can't be shared. For example, if we want no more than a single individual from any given family, within a tank, a set would be c("family","tank"), meaning that no individuals can have the same of both family and tank. Supplied within a list, so: list(c("family","tank")). Add more sets within the list if needed, for example: list(c("tank","father"),c("tank","mother)))}
+\item{no_share}{One or more sets of paremeters, where unique combinations can't be shared. For example, if we want no more than a single individual from any given family, within a tank, a set would be c("family","tank"), meaning that no individuals can have the same of both family and tank. Supplied within a list, so: list(c("family","tank")). Add more sets within the list if needed, for example: list(c("tank","father"),c("tank","mother)))}
 
-\item{priBy}{If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")}
+\item{pri_by}{If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")}
 
-\item{useDuplis}{If all individuals that are selected within each combination may be be used, or just one of them.}
+\item{use_dupli}{If all individuals that are selected within each combination may be be used, or just one of them.}
+
+\item{identifier}{Optional. A name that will be added to the "ID_type" column.}
+
+\item{return_combtable}{if T: Returns the combination table instead of searching for individuals.}
+
+\item{runs}{If T: Runs the search multiple times, and returns the run with the highest number of successfully selected individuals}
+
+\item{reshuffle_combtable}{If T: When using multiple runs, will reshuffle the order of the combination table, can help with finding individuals of problematic types (combinations)}
 
 \item{dataframe}{The dataframe to get the individuals from. Each row must be a single individual. Columns are attributes.}
 
-\item{N_ofEach}{How many individuals within each combination of the "ofEach" parameters that should be selected}
+\item{n_ofeach}{How many individuals within each combination (type) of the "ofeach" parameters that should be selected}
 }
 \description{
 Takes a dataframe of individuals (rows) with certain attributes (columns), and samples a given number of individuals from all possible combinations of a given set of paramters
 For example, can sample one individual of ech combination of sex and age
 Also allows for some control, like, "no individuals sharing the same treatment and family"
+Some lingo:
+\itemize{
+\item type: a specific combination of attributes, e.g "color:red, size:large", as define  
+\item combination table: A table that tells the sampler what you are looking for. In the table, each attribute has one column, and each row gives a different combination of attributes. The table is generated automatically based on your dataset and the "ofeach" parameter, but you can also supply it manualy.
+}
 }

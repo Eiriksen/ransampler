@@ -5,7 +5,7 @@
 \alias{table_salmon}
 \title{salmon study population}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4507 rows and 12 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 4488 rows and 11 columns.
 }
 \usage{
 data(table_salmon)
