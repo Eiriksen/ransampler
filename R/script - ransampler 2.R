@@ -14,7 +14,7 @@
 #' @param n_ofeach How many individuals within each combination (type) of the "ofeach" parameters that should be selected
 #' @param no_share One or more sets of paremeters, where unique combinations can't be shared. For example, if we want no more than a single individual from any given family, within a tank, a set would be c("family","tank"), meaning that no individuals can have the same of both family and tank. Supplied within a list, so: list(c("family","tank")). Add more sets within the list if needed, for example: list(c("tank","father"),c("tank","mother)))
 #' @param pri_by If some individuals are to be prioritized over others, specify the name of the column containing prioritization info. This must ba number, and lower numbers are prioritized. (E.g, individuals with "1" are prioritized over individuals iwth "2")
-#' @param use_dupli If all individuals that are selected within each combination may be be used, or just one of them.
+#' @param use_dupli If no_share should be enforced for individuals of the same combiantion (type). In other words, if both individuals of same type are planned to be used, or if one is just backup. 
 #' @param identifier Optional. A name that will be added to the "ID_type" column. 
 #' @param return_combtable if T: Returns the combination table instead of searching for individuals.
 #' @param runs If T: Runs the search multiple times, and returns the run with the highest number of successfully selected individuals
@@ -41,7 +41,7 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
 
   if (!missing(n_ofeach))
   {
-    table_combinations$nOfThis = n_ofeach
+    table_combinations$n_ofeach = n_ofeach
   }
 
   # if exceptionsa are used:
@@ -95,7 +95,7 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
 
     count_layer <- 1
     ## build the found indiv table layerswise. Find first one individual of each combinatoin,
-    while (count_layer <= max(table_combinations$nOfThis))
+    while (count_layer <= max(table_combinations$n_ofeach))
     {
       for (row in 1:nrow(table_combinations))
       {
@@ -105,11 +105,11 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
         count_level          <- 1
         count_pri            <- 1
         ID_type_cur          <- as.character(glue("Type {identifier}-{row}"))
-        curCombination       <- table_combinations[row,] %>% as.list() %>% remove_listItem("nOfThis")
+        curCombination       <- table_combinations[row,] %>% as.list() %>% remove_listItem("n_ofeach")
         table_curCombination <- table_main %>% listFilter(curCombination)
 
         # check if we've reached the limit of how many layers this curCombination wants
-        if (count_layer > table_combinations[row,]$nOfThis)
+        if (count_layer > table_combinations[row,]$n_ofeach)
         {
           next()
         }
@@ -143,7 +143,7 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
           if (use_dupli == F & count_layer != 1 & count_level != count_layer)
           {
             previous_individual <- table_selected %>% filter(ID_type == ID_type_cur) %>% filter(level==count_level)
-
+            
             if (previous_individual %>% nrow() == 0)
             {
               count_level <- count_level+1
@@ -166,7 +166,7 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
            ranRow <- round(runif(1,1,nrow(table_curCombination_narrow)))
            curIndividual <- table_curCombination_narrow[ranRow,]
            table_curCombination <- filter(table_curCombination, ID_num != curIndividual$ID_num)
-
+          
 
            external_conflict <- F
            internal_conflict <- F
@@ -236,20 +236,20 @@ combinationTable = function(dataframe, columns){
 
 # SKIPS NA values
 listFilter = function(df,l,eq=T){
-
   for (s in 1:length(l))
   {
     col = names(l)[s]
     val = l[s]
-
+    # to make val not be a tibble (causes warning with filter())
+    val = val[[1]]
 
     if (is.na(val))
     {
       next()
     }
     if(col %in% colnames(df)){
-      if(eq)  df = df %>% filter(!!sym(col)==val)
-      else    df = df %>% filter(!!sym(col)!=val)
+      if(eq)  df <- df %>% filter(!!sym(col)==val)
+      else    df <- df %>% filter(!!sym(col)!=val)
     }
   }
   return(df)
