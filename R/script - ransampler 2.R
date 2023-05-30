@@ -20,7 +20,7 @@
 #' @param runs If T: Runs the search multiple times, and returns the run with the highest number of successfully selected individuals
 #' @param reshuffle_combtable If T: When using multiple runs, will reshuffle the order of the combination table, can help with finding individuals of problematic types (combinations)
 #' @export
-ransampler = function(table,ofeach,except,n_of_each=1,no_share=c(),pri_by,use_dupli=F,identifier="",return_combtable=F,runs=1,reshuffle_combtable=F){
+ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dupli=F,identifier="",return_combtable=F,runs=1,reshuffle_combtable=F){
   require(glue)
   require(tidyverse)
   require(magrittr)
@@ -39,9 +39,9 @@ ransampler = function(table,ofeach,except,n_of_each=1,no_share=c(),pri_by,use_du
     table_combinations <- bind_rows(ofeach)
   }
 
-  if (!missing(n_of_each))
+  if (!missing(n_ofeach))
   {
-    table_combinations$nOfThis = n_of_each
+    table_combinations$nOfThis = n_ofeach
   }
 
   # if exceptionsa are used:

@@ -8,7 +8,7 @@ ransampler(
   table,
   ofeach,
   except,
-  n_of_each = 1,
+  n_ofeach = 1,
   no_share = c(),
   pri_by,
   use_dupli = F,
@@ -20,6 +20,8 @@ ransampler(
 }
 \arguments{
 \item{ofeach}{The attributes we want to randomise over, as a vector of column names, e.g: ofeach=c("sex","age","tank"). Can also be a combination table (data frame).}
+
+\item{n_ofeach}{How many individuals within each combination (type) of the "ofeach" parameters that should be selected}
 
 \item{no_share}{One or more sets of paremeters, where unique combinations can't be shared. For example, if we want no more than a single individual from any given family, within a tank, a set would be c("family","tank"), meaning that no individuals can have the same of both family and tank. Supplied within a list, so: list(c("family","tank")). Add more sets within the list if needed, for example: list(c("tank","father"),c("tank","mother)))}
 
@@ -36,8 +38,6 @@ ransampler(
 \item{reshuffle_combtable}{If T: When using multiple runs, will reshuffle the order of the combination table, can help with finding individuals of problematic types (combinations)}
 
 \item{dataframe}{The dataframe to get the individuals from. Each row must be a single individual. Columns are attributes.}
-
-\item{n_ofeach}{How many individuals within each combination (type) of the "ofeach" parameters that should be selected}
 }
 \description{
 Takes a dataframe of individuals (rows) with certain attributes (columns), and samples a given number of individuals from all possible combinations of a given set of paramters
