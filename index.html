@@ -446,20 +446,20 @@ head(table_salmon)</code></pre>
 <pre><code>## # A tibble: 3 × 15
 ##   ID        tank  pit     weight temp  geno_…¹ sex   popul…² ID_ma ID_pa ID_fa…³
 ##   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  
-## 1 Offsp0936 Tank1 A00000…   1107 hot   EL      M     NEV     Pare… Pare… NEV 36 
-## 2 Offsp1643 Tank2 A00000…   1584 hot   EE      F     NEV     Pare… Pare… NEV 34 
-## 3 Offsp1846 Tank3 A00000…    750 hot   EL      F     NEV     Pare… Pare… NEV 52 
+## 1 Offsp1313 Tank1 A00000…  1206. hot   LL      F     NEV     Pare… Pare… NEV 17 
+## 2 Offsp1522 Tank2 A00000…  1186  hot   EL      M     NEV     Pare… Pare… NEV 4  
+## 3 Offsp1972 Tank3 A00000…   902. hot   EE      F     NEV     Pare… Pare… NEV 34 
 ## # … with 4 more variables: internalPri &lt;dbl&gt;, ID_num &lt;int&gt;, ID_type &lt;chr&gt;,
 ## #   n_of_type &lt;dbl&gt;, and abbreviated variable names ¹​geno_vgll3, ²​population,
 ## #   ³​ID_family</code></pre>
 <p>The function first outputs a table, the <strong>combination
 table</strong> into the console. This table shows you what the sampling
 algorithm will be looking for. In this case: 1 individual from each of
-the 6 tanks, and in each tank there is some ~400 individuals to pick
+the 3 tanks, and in each tank there is some ~130 individuals to pick
 from.</p>
 <p>After searching, the function returns a new table with the results.
 This has the same structure as the original table, but includes only the
-selected individuals. We can see that it found 6 individuals, one from
+selected individuals. We can see that it found 3 individuals, one from
 each tank.</p>
 </div>
 <div id="scenario-2-more-groups" class="section level2">
@@ -501,16 +501,16 @@ tank:</p>
 <pre><code>## # A tibble: 24 × 15
 ##    ID        tank  pit    weight temp  geno_…¹ sex   popul…² ID_ma ID_pa ID_fa…³
 ##    &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  
-##  1 Offsp1110 Tank1 A0000…   654. hot   EE      F     NEV     Pare… Pare… NEV 30 
-##  2 Offsp1169 Tank1 A0000…   702  hot   EL      F     NEV     Pare… Pare… NEV 44 
-##  3 Offsp1350 Tank1 A0000…   412. hot   LE      F     NEV     Pare… Pare… NEV 3  
-##  4 Offsp1248 Tank1 A0000…  1210  hot   LL      F     NEV     Pare… Pare… NEV 41 
-##  5 Offsp1043 Tank1 A0000…  1493  hot   EE      M     NEV     Pare… Pare… NEV 34 
-##  6 Offsp1027 Tank1 A0000…  1015  hot   EL      M     NEV     Pare… Pare… NEV 56 
-##  7 Offsp0989 Tank1 A0000…   974. hot   LE      M     NEV     Pare… Pare… NEV 11 
-##  8 Offsp1228 Tank1 A0000…   762. hot   LL      M     NEV     Pare… Pare… NEV 21 
-##  9 Offsp1625 Tank2 A0000…  1586  hot   EE      F     NEV     Pare… Pare… NEV 34 
-## 10 Offsp1490 Tank2 A0000…  1156. hot   EL      F     NEV     Pare… Pare… NEV 68 
+##  1 Offsp1265 Tank1 A0000…   346  hot   EE      F     NEV     Pare… Pare… NEV 34 
+##  2 Offsp1247 Tank1 A0000…   298  hot   EL      F     NEV     Pare… Pare… NEV 20 
+##  3 Offsp1371 Tank1 A0000…  1146  hot   LE      F     NEV     Pare… Pare… NEV 67 
+##  4 Offsp1341 Tank1 A0000…   944. hot   LL      F     NEV     Pare… Pare… NEV 65 
+##  5 Offsp1036 Tank1 A0000…  1124. hot   EE      M     NEV     Pare… Pare… NEV 34 
+##  6 Offsp1269 Tank1 A0000…  1002. hot   EL      M     NEV     Pare… Pare… NEV 56 
+##  7 Offsp1222 Tank1 A0000…  1044. hot   LE      M     NEV     Pare… Pare… NEV 55 
+##  8 Offsp1327 Tank1 A0000…   780. hot   LL      M     NEV     Pare… Pare… NEV 17 
+##  9 Offsp1603 Tank2 A0000…   730. hot   EE      F     NEV     Pare… Pare… NEV 30 
+## 10 Offsp1458 Tank2 A0000…  1367  hot   EL      F     NEV     Pare… Pare… NEV 32 
 ## # … with 14 more rows, 4 more variables: internalPri &lt;dbl&gt;, ID_num &lt;int&gt;,
 ## #   ID_type &lt;chr&gt;, n_of_type &lt;dbl&gt;, and abbreviated variable names ¹​geno_vgll3,
 ## #   ²​population, ³​ID_family</code></pre>
@@ -519,7 +519,7 @@ still just to show what’s going on. The table shows that the algorithm
 will be looking for one individual of each combination of the column
 “tank”, “geno_vgll3”, and “sex”. Now, there is fewer otions for each
 combination (-or, “type”). In the end, the function returns a table with
-96 individuals, just as requested.</p>
+24 individuals, just as requested.</p>
 </div>
 <div id="scenario-3-no-shares" class="section level2">
 <h2>Scenario 3: No-shares</h2>
@@ -618,7 +618,7 @@ no individuals will get picked because there will be no legible
 individuals to pick from.</p>
 <p>Counting how many missing individuals we have:</p>
 <pre class="r"><code>result %&gt;% filter(is.na(ID)) %&gt;% nrow()</code></pre>
-<pre><code>## [1] 12</code></pre>
+<pre><code>## [1] 13</code></pre>
 <p>There are a few strategies to cope with low numbers of
 individuals:</p>
 <div id="strategy-1-the-use_duplis-option" class="section level3">
@@ -692,7 +692,7 @@ potentially opening up for more usable individuals:</p>
 scenario, this is not likely to improve the result much, as lack of
 family variation within tanks is not a big issue)</p>
 <pre class="r"><code>result_2 %&gt;% filter(is.na(ID)) %&gt;% nrow()</code></pre>
-<pre><code>## [1] 13</code></pre>
+<pre><code>## [1] 11</code></pre>
 </div>
 <div id="strategy-2-the-best-of-multiple-runs" class="section level3">
 <h3>Strategy 2: The best of multiple runs</h3>
@@ -764,15 +764,15 @@ least missing individuals.</p>
 ## 47 Tank3 M     LE                2         6
 ## 48 Tank3 M     LL                2         3</code></pre>
 <pre><code>## Run 1 of 5</code></pre>
-<pre><code>## Missing: 11</code></pre>
-<pre><code>## Run 2 of 5</code></pre>
-<pre><code>## Missing: 9</code></pre>
-<pre><code>## Run 3 of 5</code></pre>
 <pre><code>## Missing: 13</code></pre>
+<pre><code>## Run 2 of 5</code></pre>
+<pre><code>## Missing: 13</code></pre>
+<pre><code>## Run 3 of 5</code></pre>
+<pre><code>## Missing: 12</code></pre>
 <pre><code>## Run 4 of 5</code></pre>
 <pre><code>## Missing: 11</code></pre>
 <pre><code>## Run 5 of 5</code></pre>
-<pre><code>## Missing: 13</code></pre>
+<pre><code>## Missing: 7</code></pre>
 <pre class="r"><code>result_3 %&gt;% filter(is.na(ID)) %&gt;% nrow()</code></pre>
 <pre><code>## [1] 11</code></pre>
 <p>A little better!</p>

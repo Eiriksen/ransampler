@@ -43,9 +43,9 @@ ransampler(
 
 ```
 
-The function first outputs a table, the **combination table** into the console. This table shows you what the sampling algorithm will be looking for. In this case: 1 individual from each of the 6 tanks, and in each tank there is some \~400 individuals to pick from.
+The function first outputs a table, the **combination table** into the console. This table shows you what the sampling algorithm will be looking for. In this case: 1 individual from each of the 3 tanks, and in each tank there is some \~130 individuals to pick from.
 
-After searching, the function returns a new table with the results. This has the same structure as the original table, but includes only the selected individuals. We can see that it found 6 individuals, one from each tank.
+After searching, the function returns a new table with the results. This has the same structure as the original table, but includes only the selected individuals. We can see that it found 3 individuals, one from each tank.
 
 
 
@@ -58,7 +58,7 @@ ransampler(
   ofeach = c("tank","sex","geno_vgll3")
 )
 ```
-The combination table is rather long this time, but I'm showing it still just to show what's going on. The table shows that the algorithm will be looking for one individual of each combination of the column "tank", "geno_vgll3", and "sex". Now, there is fewer otions for each combination (-or, "type"). In the end, the function returns a table with 96 individuals, just as requested.
+The combination table is rather long this time, but I'm showing it still just to show what's going on. The table shows that the algorithm will be looking for one individual of each combination of the column "tank", "geno_vgll3", and "sex". Now, there is fewer otions for each combination (-or, "type"). In the end, the function returns a table with 24 individuals, just as requested.
 
 
 
