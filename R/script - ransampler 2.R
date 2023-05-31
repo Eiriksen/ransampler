@@ -39,10 +39,8 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
     table_combinations <- bind_rows(ofeach)
   }
 
-  if (!missing(n_ofeach))
-  {
-    table_combinations$n_ofeach = n_ofeach
-  }
+  table_combinations$n_ofeach = n_ofeach
+
 
   # if exceptionsa are used:
   if (!missing(except)){
