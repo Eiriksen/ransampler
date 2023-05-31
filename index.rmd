@@ -1,0 +1,225 @@
+---
+title: "Random selection with ransampler"
+author: Eirik Ryvoll Åsheim
+date: "May, 2023"
+output: 
+  html_document:
+    theme: flatly 
+    toc: true
+---
+
+Sometimes we need to randomly pick out individuals from a study population, for example for sampling, measurements, or other activities. In the simplest cases, this just means haphazardly picking out individuals on-site, but sometimes we need more controll over this process. The R package ransampler can help with some cases of this. It can do random sampling of individuals from multiple groups, prioritizing some indiiduals over others, and can include "no-share" conditions, for example avoiding picking two individuals of the same type within some group (for example, two individuals of the same family from the same study-group).
+
+In this quick demo, I'll show some examples of how to use ransampler. First, install ransampler from github (needs devtools installed):
+
+```{R eval=FALSE}
+devtools::install_github("eiriksen/ransampler")
+
+# see also the function's documentation:
+?ransampler
+```
+
+the ransampler package comes with **two example datasets**, "table_salmon" and "table_salmon_small". The datasets include a study population of fish, where each row is one individual, and columns denote various traits and experimental groups (ID, weight, tank, vgll3 genotype, mother ID, father ID, etc).
+
+```{R message=FALSE, warning=FALSE}
+library(ransampler)
+library(tidyverse)
+library(glue)
+library(magrittr)
+head(table_salmon)
+
+```
+
+### Scenario 1: simple selection
+
+Sampling one individual randomly from each tank:
+
+```{R}
+
+ransampler(
+  table = table_salmon,
+  ofeach = "tank"
+)
+
+```
+
+The function first outputs a table, the **combination table** into the console. This table shows you what the sampling algorithm will be looking for. In this case: 1 individual from each of the 6 tanks, and in each tank there is some \~400 individuals to pick from.
+
+After searching, the function returns a new table with the results. This has the same structure as the original table, but includes only the selected individuals. We can see that it found 6 individuals, one from each tank.
+
+
+
+
+## Scenario 2: more groups
+Sampling one individual from each sex and vgll3 genotype from each tank:
+```{R}
+ransampler(
+  table = table_salmon,
+  ofeach = c("tank","sex","geno_vgll3")
+)
+```
+The combination table is rather long this time, but I'm showing it still just to show what's going on. The table shows that the algorithm will be looking for one individual of each combination of the column "tank", "geno_vgll3", and "sex". Now, there is fewer otions for each combination (-or, "type"). In the end, the function returns a table with 96 individuals, just as requested.
+
+
+
+
+## Scenario 3: No-shares
+Here, let's try the no-share option. We'll do the same sampling as above, but now we specify that we want no individuals within the same tank to come from the same mother or father (so selected individuals within tanks are more genetically distinct). Essentially, what we tell the function below is that "no individuals may have the same tank and the same mother, and no individuals may have the same tank and the same father:
+```{R eval=FALSE}
+
+ransampler(
+  table = table_salmon,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+) 
+
+```
+I'm not showing the output here, as it is more or less the same as above.
+
+
+
+
+## Scenario 4: More than one individual per type
+We can use the n_ofeach to tell the algorithm that we want two individuals of each combination/type:
+```{R eval=FALSE}
+
+ransampler(
+  table = table_salmon,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+  n_ofeach= 2,
+) 
+
+```
+
+
+
+
+## scenario 5: Not enough individuals!
+Let's try now using the table_salmon_small, which is a smaller version of the table_salmon dataset
+```{R}
+
+result <- ransampler(
+  table = table_salmon_small,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+  n_ofeach= 2,
+) 
+
+```
+Notice from the combinations table that for some combinations/types, there are very few individuals to pick from (down to 1 in some cases). Because of the no-share rule, this could mean that for some categories, no individuals will get picked because there will be no legible individuals to pick from.
+
+Counting how many missing individuals we have:
+```{R}
+result %>% filter(is.na(ID)) %>% nrow()
+```
+There are a few strategies to cope with low numbers of individuals:
+
+
+
+
+### Strategy 1: the use_duplis option
+In the scenario above, we're picking two individuals of each type. However, maybe we're not planning on using both individuals, maybe we pick two because we want one in backup. In that case, we can tell the sampler that we only plan on using one of each type. That way, it will not enforce the no_share rule on individuals of the same type, potentially opening up for more usable individuals:
+```{R echo=T, results='hide'}
+
+result_2 <- ransampler(
+  table = table_salmon_small,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+  n_ofeach= 2,
+  use_dupli = F
+) 
+
+```
+Again, checking how many we are missing: (Note, in this specific scenario, this is not likely to improve the result much, as lack of family variation within tanks is not a big issue)
+```{R}
+result_2 %>% filter(is.na(ID)) %>% nrow()
+```
+
+
+
+
+### Strategy 2: The best of multiple runs
+
+Each time you run the function, you will get a different result (since the picking is random). If you're having issues with picking enough individuals for some combinations, you can try to run the function several times, and pick the result that has the least missing individuals. This is done automatically with the "runs" parameter. In the example below, we run the sampler 5 times and pick the result with least missing individuals.
+
+```{R}
+
+result_3 <- ransampler(
+  table = table_salmon_small,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+  n_ofeach= 2,
+  use_dupli = F,
+  runs = 5
+) 
+
+```
+
+```{R}
+result_3 %>% filter(is.na(ID)) %>% nrow()
+```
+
+A little better!
+
+
+
+
+## Prioritizing
+Finally, let's have a quick look at the prioritizing option. Let's say we want to prioritize individuals from large families (so as to not exhaust small families). We can do so by making a new column called "siblings", which tells how many siblings each individual has in a tank, and then prioritize by the inverse of this (so that those with many siblings get prioritized first).
+
+First, a funtion for counting siblings, and for inverting the count:
+```{R}
+# functions used for counting siblings (used below)
+siblings_count <- function (df) 
+{
+  sibs <- df %>% apply(MARGIN = 1, FUN = function(x) {
+    tfam = x[["ID_family"]]
+    ttank = x[["tank"]]
+    sibs = df %>% filter(ID_family == tfam & ttank == tank) %>% 
+      nrow()
+    sibs
+  })
+  df$sibs = sibs
+  df
+}
+
+# also used below
+invert <- function(x) 
+{
+  (max(x) - x) + 1
+}
+```
+
+
+
+
+Then, lets try this in practice:
+```{R}
+table_salmon_sibs <- 
+  table_salmon %>%
+  siblings_count %>% 
+  mutate( pri = invert(sibs) )
+
+head(table_salmon_sibs)
+```
+
+
+
+Now we have one column "sibs" which tells how many siblings each individual has per tank, and one "pri" which is the inverse of this one. We'll now do a new sampling where we prioritize using the column "pri"
+
+```{R eval=FALSE}
+
+result_4 <- ransampler(
+  table = table_salmon_sibs,
+  ofeach = c("tank","sex","geno_vgll3"),
+  no_share = list(c("ID_ma","tank"),c("ID_pa","tank")),
+  n_ofeach= 2,
+  pri_by = "pri"
+
+) 
+
+```
+
+
+This will return a table with selected individuals as before, but this time the individuals with many siblings should have been prioritized.

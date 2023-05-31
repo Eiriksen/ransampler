@@ -65,6 +65,7 @@ ransampler = function(table,ofeach,except,n_ofeach=1,no_share=c(),pri_by,use_dup
     message(
     table_combinations %>%
     combinations_getOptions(table_main=table) %>%
+    print(n=1000) %>%
     capture.output() %>%
     paste0(collapse="\n")
     )
